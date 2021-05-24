@@ -5,6 +5,9 @@
 #include <list.h>
 #include <stdint.h>
 
+/* Solution Code */
+#include "threads/fixed-point.h"
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -90,6 +93,14 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
+    /* Solution Code */
+    int64_t ticks_blocked;
+    int base_priority;
+    struct list locks_holding;
+    struct lock *lock_waiting4;
+    int nice;
+    fixed_t recent_cpu;
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
@@ -106,6 +117,9 @@ struct thread
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
+
+/* Solution Code */
+void checkInvoke(struct thread *t, void *aux UNUSED);
 
 void thread_init (void);
 void thread_start (void);
@@ -133,9 +147,22 @@ void thread_foreach (thread_action_func *, void *);
 int thread_get_priority (void);
 void thread_set_priority (int);
 
+/* Solution Code */
+bool thread_cmp_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+void thread_donate_priority(struct thread *t);
+void thread_hold_lock(struct lock *lock);
+void thread_remove_lock(struct lock *lock);
+bool lock_cmp_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+void thread_update_priority(struct thread *t);
+
 int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
+/* Solution Code */
+/* For mlfqs */
+void mlfqs_inc_recent_cpu();
+void mlfqs_update_load_avg_and_recent_cpu();
+void mlfqs_update_priority();
 #endif /* threads/thread.h */
